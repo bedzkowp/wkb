@@ -6,12 +6,14 @@ from numpy import linspace as linspace
 from math import sqrt as sqrt
 import math
 import numpy as np
+from scipy import integrate
+
 
 def przypadek(NA, g, n1, l, core_d, clad_d, m, p):
 
   def n(r):
     if r >=0 and r <= a:
-      return n1 * sqrt(1 - 2 * delta * ((r /a)**g))
+      return n1 * sqrt(1 - 2 * delta * ((r / a)**g))
     else:
       return n1 * sqrt(1 - 2 * delta)
   
@@ -38,20 +40,26 @@ def przypadek(NA, g, n1, l, core_d, clad_d, m, p):
   print(n1)
   print(n2)
   
-  B = np.linspace(n2*ko, n1*ko, 500)
+  B = np.linspace(n2*ko, n1*ko, 500) #testowane wartosci b
   
   r = np.arange(0.0, clad_r, 1e-7)
   y = [ n(x) for x in r ]
   
-  N = 10000
+  N = 10000 #liczba przedzialow calkowania
   li = np.linspace(0, clad_r, 10000)[1:]
   
   A = []
   i = 0
-  for beta in B:
+  for beta in B: #calka dla kazdej testowanej wartosci b
     b = beta
-    fx = [f(x) for x in li]
-    area = np.sum(fx)*(clad_r)/9999
+    #fx = [f(x) for x in li]
+
+    #area = np.sum(fx)*(clad_r)/9999
+    #area = cumtrapz(fx,li,initial=0)
+    
+    area = integrate.quad(f,li[0],clad_r)[0]
+    #area = integrate.simps(fx,li)[0]
+
     A.append(area)
     i+=1
   
@@ -72,6 +80,18 @@ def przypadek(NA, g, n1, l, core_d, clad_d, m, p):
   #l = 1550e-9
   #core_d = 0.000050
 
+
+wynik = przypadek(0.2, 2, 1.482, 850e-9, 0.000050, 0.000125, 0, 1)
+
+print(wynik)
+print("\n")
+print("Beta: {}".format(wynik['b']))
+print("\n")
+
+
+
+exit(0)
+print("test")
 fale = np.linspace(850e-9, 1300e-9, 30)
 mody = [(0,1), (1,1), (2,1), (0,2), (3,1)]
 wyniki = []
@@ -92,6 +112,7 @@ for wynik in wyniki:
   y = [val["b"] / val["ko"] for val in wynik]
   plt.plot(x,y)
 
+plt.show() 
 #for fala in fale:
 #  for mod in mody:
 #
@@ -106,6 +127,5 @@ for wynik in wyniki:
 #x = [val["v"]/sqrt(2) for val in vals11]
 #y = [val["b"] / val["ko"] for val in vals11]
 #plt.plot(x,y)
-plt.show() 
 # b01=1-math.pow((1+sqrt(2))/(1+math.pow( 4+math.pow(v,4) ,0.25) ),2)
 # bee = (math.pow(b/ko,2)-math.pow(n2,2))/(n1**2 - n2**2)
