@@ -1,0 +1,35 @@
+<Display>:
+    BoxLayout:
+        orientation: "vertical"
+		
+			
+		Label:
+			id: label2
+			text: 'SOIB Zadanie 12, wykonali: Bartosz Kosciug, Piotr Bedzkowski'
+			size: 200,30
+			size_hint: 1, None
+			bold: True
+			
+        BoxLayout:
+            size_hint: 1, None
+            height: '48dp'
+            Button:
+                text: 'Parametry'
+				color: 1,1,0,1
+                on_release: sm.current = 'screen_one'  #<<<<<<<<<<<<<<<<
+            
+
+        ScreenManager:
+            id: sm
+            Screen_One:
+            
+
+
+<Screen_One>:
+    name: 'screen_one'      #<<<<<<<<<<<<<<<<
+	
+
+<Screen_Two>:
+    name: 'screen_two'      #<<<<<<<<<<<<<<<<
+    
+
