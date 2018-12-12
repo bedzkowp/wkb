@@ -7,7 +7,9 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.popup import Popup
+from kivy.uix.progressbar import ProgressBar
 from soib import beta
+from kivy.clock import Clock
 import matplotlib.pyplot as plt
 from numpy import linspace as linspace
 import math
@@ -20,6 +22,8 @@ class Display(BoxLayout):
 
 class LoginScreen(GridLayout):
 
+   
+    
     def n(self,r,a,g,delta,n1):
         if r >=0 and r <= a:
           return n1 * math.sqrt(1 - 2 * delta * ((r / a)**g))
@@ -42,9 +46,9 @@ class LoginScreen(GridLayout):
             g = int(self.g.text)
             n1 = float(self.n1.text)
             NA = float(self.NA.text)
-            core_d = float(self.core_d.text)
-            clad_d = float(self.clad_d.text)
-            l = float(self.l.text)
+            core_d = float(self.core_d.text)/10**6
+            clad_d = float(self.clad_d.text)/10**6
+            l = float(self.l.text)/10**9
             delta = (NA**2)/(2*(n1**2))
             clad_r = clad_d/2
             a = core_d/2
@@ -53,7 +57,7 @@ class LoginScreen(GridLayout):
             
             for r in r_vec:
                 n_vec.append(self.n(r,a, g, delta, n1))
-
+                
             plt.plot(r_vec,n_vec)
             plt.xlabel("odległość od środka światłowodu - r [m]")
             plt.ylabel("wartość współczynnika załamania - n")
@@ -72,27 +76,33 @@ class LoginScreen(GridLayout):
             btnClose.bind(on_press=popup.dismiss)
             popup.open()
         else:
+            #popup = Popup(title="Progress Bar", content=self.pb)
+            #popup.open()
             m = int(self.m.text)
             p = int(self.p.text)
             g = int(self.g.text)
             n1 = float(self.n1.text)
             NA = float(self.NA.text)
-            core_d = float(self.core_d.text)
-            clad_d = float(self.clad_d.text)
+            core_d = float(self.core_d.text)/10**6
+            clad_d = float(self.clad_d.text)/10**6
             
             delta = (NA**2)/(2*(n1**2))
             clad_r = clad_d/2
             a = core_d/2
-            l_vec = linspace(600e-9,1200e-9, 20)
-            l_vec2 = linspace(600,1200,20)
+            l_vec = linspace(600e-9,1600e-9, 20)
+            l_vec2 = linspace(600,1600,20)
             b_vec = []
+            #self.trigger()
+            
             for l in l_vec:
                 ko = (2 * math.pi) / l 
-                b_vec.append(beta(NA,g, n1,l, core_d, clad_d,m,p)['b']/ko)
+                b_vec.append(beta(NA,g, n1,l, core_d, clad_d,m,p)['b']/10**6)
+                #self.update_bar_trigger()
+                #Clock.schedule_once(self.update_bar,1)
                 
             plt.plot(l_vec2,b_vec)
             plt.xlabel("długość fali - [nm]")
-            plt.ylabel("B/ko")
+            plt.ylabel("B [rad/um]")
             plt.title("Wykres B/ko w zależności od długości fali")
             plt.grid(True)
             plt.show()
@@ -115,15 +125,29 @@ class LoginScreen(GridLayout):
             g = int(self.g.text)
             n1 = float(self.n1.text)
             NA = float(self.NA.text)
-            core_d = float(self.core_d.text)
-            clad_d = float(self.clad_d.text)
-            l = float(self.l.text)
+            core_d = float(self.core_d.text)/10**6
+            clad_d = float(self.clad_d.text)/10**6
+            l = float(self.l.text)/10**9
             
             B = beta(NA, g, n1, l, core_d, clad_d, m, p) 
-            self.B.text = str(B['b'])
-        
+            self.B.text = str(round(B['b']/10**6,3))
+
+    def update_bar(self,dt):
+
+            self.pb.value = self.pb.value + dt
+            #self.update_bar_trigger()
+            if self.pb.value > 20:
+                Clock.unschedule(self.update_bar)
+
+    def trigger(self):
+        self.pb.value = 0
+        #self.update_bar_trigger() 
+    
     def __init__(self, **kwargs):
         super(LoginScreen, self).__init__(**kwargs)
+        #self.update_bar_trigger = Clock.create_trigger(self.update_bar,-1)
+        self.pb = ProgressBar()
+        
         self.cols = 2
         
         self.add_widget(Label(text="m:"))
@@ -146,19 +170,19 @@ class LoginScreen(GridLayout):
         self.NA = TextInput(multiline=False)
         self.add_widget(self.NA)
 
-        self.add_widget(Label(text="srednica rdzenia:"))
+        self.add_widget(Label(text="srednica rdzenia [um]:"))
         self.core_d = TextInput(multiline=False)
         self.add_widget(self.core_d)
 
-        self.add_widget(Label(text="srednica płaszcza:"))
+        self.add_widget(Label(text="srednica płaszcza [um]:"))
         self.clad_d = TextInput(multiline=False)
         self.add_widget(self.clad_d)
 
-        self.add_widget(Label(text="długość fali:"))
+        self.add_widget(Label(text="długość fali [nm]:"))
         self.l = TextInput(multiline=False)
         self.add_widget(self.l)
 
-        self.add_widget(Button(text="Oblicz wartość stałej propagacji B", on_press=self.isFilled))
+        self.add_widget(Button(text="Oblicz wartość stałej propagacji B [rad/um]", on_press=self.isFilled))
         self.B = TextInput(readonly=True)
         self.add_widget(self.B)
 
