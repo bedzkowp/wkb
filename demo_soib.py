@@ -17,9 +17,6 @@ import math
 class Display(BoxLayout):
     pass
 
-
-
-
 class LoginScreen(GridLayout):
 
    
@@ -128,9 +125,19 @@ class LoginScreen(GridLayout):
             core_d = float(self.core_d.text)/10**6
             clad_d = float(self.clad_d.text)/10**6
             l = float(self.l.text)/10**9
-            
-            B = beta(NA, g, n1, l, core_d, clad_d, m, p) 
-            self.B.text = str(round(B['b']/10**6,3))
+            try:
+                B = beta(NA, g, n1, l, core_d, clad_d, m, p)
+                self.B.text = str(round(B['b']/10**6,3))				
+            except ValueError:
+                layout = GridLayout(cols=1)
+                layout.add_widget(Label(text="Proszę podać odpowiednie parametry!"))
+                btnClose = Button(text="Zamknij")
+                layout.add_widget(btnClose)
+                popup = Popup(title="UWAGA!", content=layout,size_hint=(None,None), size=(300,200),auto_dismiss=False)
+                btnClose.bind(on_press=popup.dismiss)
+                popup.open()
+			
+           
 
     def update_bar(self,dt):
 
